@@ -1,6 +1,7 @@
 # CMake definitions for libprotobuf (the "full" C++ protobuf runtime).
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_srcs}
@@ -25,7 +26,12 @@ endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
   target_link_libraries(libprotobuf PRIVATE log)
 endif()
-target_include_directories(libprotobuf PUBLIC ${protobuf_SOURCE_DIR}/src)
+target_include_directories(libprotobuf PUBLIC
+  $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(libprotobuf PUBLIC ${protobuf_ABSL_USED_TARGETS})
+protobuf_configure_target(libprotobuf)
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf
     PUBLIC  PROTOBUF_USE_DLLS
@@ -33,7 +39,13 @@ if(protobuf_BUILD_SHARED_LIBS)
 endif()
 set_target_properties(libprotobuf PROPERTIES
     VERSION ${protobuf_VERSION}
-    SOVERSION 32
     OUTPUT_NAME ${LIB_PREFIX}protobuf
-    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
+    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}"
+    # For -fvisibility=hidden and -fvisibility-inlines-hidden
+    C_VISIBILITY_PRESET hidden
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+)
 add_library(protobuf::libprotobuf ALIAS libprotobuf)
+
+target_link_libraries(libprotobuf PRIVATE utf8_validity)

@@ -11,7 +11,7 @@ Requirements
 The Objective C implementation requires:
 
 - Objective C 2.0 Runtime (32bit & 64bit iOS, 64bit OS X).
-- Xcode 10.3 (or later).
+- Xcode 13.3.1 (or later).
 - The library code does *not* use ARC (for performance reasons), but it all can
   be called from ARC code.
 
@@ -25,7 +25,7 @@ to build the compiler and run the runtime tests, you can use:
 
      $ objectivec/DevTools/full_mac_build.sh
 
-This will generate the `src/protoc` binary.
+This will generate the `protoc` binary.
 
 Building
 --------
@@ -112,15 +112,13 @@ causing it to be created for you. For this, there is always a `\[NAME\]_Count`
 property also provided that can return zero or the real count, but won't trigger
 the creation.
 
-For primitive type fields (ints, floats, bools, enum) in messages defined in a
-`.proto` file that use *proto2* syntax there are conceptual differences between
-having an *explicit* and *default* value. You can always get the value of the
-property. In the case that it hasn't been set you will get the default. In
-cases where you need to know whether it was set explicitly or you are just
-getting the default, you can use the `has\[NAME\]` property. If the value has
-been set, and you want to clear it, you can set the `has\[NAME\]` to `NO`.
-*proto3* syntax messages do away with this concept, thus the default values are
-never included when the message is encoded.
+All message fields *always* have a value when accessed. For primitive type
+fields (ints, floats, bools, enum) there the concept of *presence*, that allows
+you to tell the difference between when the field is the *default* value because
+it *was not* set and when it *was* set, but *explicitly* to the *default*
+value for the field. For fields with that do support *presence*, you can test
+if the value was *explicitly* set via the `has\[NAME\]` property. If the value
+has been set, and you want to clear it, you can set the `has\[NAME\]` to `NO`.
 
 The Objective C classes/enums can be used from Swift code.
 
